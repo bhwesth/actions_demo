@@ -1,37 +1,47 @@
-import { cookies } from "next/headers";
-import Form from "./components/Form";
+"use client";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
-    async function storeToken(token) {
-        "use server";
-        console.log(token);
-        cookies().set({
-            name: "token",
-            value: token,
-            httpOnly: true,
-            sameSite: "strict",
-            secure: true,
-        });
+    const [index, setIndex] = useState(0);
+    const intervalRef = useRef();
+    const length = 4;
+
+    useEffect(() => {
+        startInterval();
+        return stopInterval;
+    }, []);
+
+    useEffect(() => {
+        console.log(intervalRef);
+    }, [intervalRef]);
+
+    function startInterval() {
+        if (!intervalRef.current) {
+            intervalRef.current = setInterval(() => {
+                setIndex((prevState) => {
+                    return prevState === length - 1 ? 0 : prevState + 1;
+                });
+            }, 1000);
+        }
     }
 
-    async function submit(formData) {
-        "use server";
-        console.log(formData);
-        try {
-            // Først fetch, og få token
-            // const response = await http.post(`/auth/login`, formData);
-
-            // Kalder her storeToken bare med input value
-            await storeToken(formData.get("login"));
-            // I stedet ville man selvfølgelig bruge den token man får fra fetch response
-        } catch (error) {
-            console.error("error logging in", error);
+    function stopInterval() {
+        if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
         }
     }
 
     return (
         <main className="flex min-h-screen flex-col items-center justify-between p-24">
-            <Form submit={submit} />
+            <p>{index}</p>
+            <div
+                onMouseLeave={startInterval}
+                onMouseEnter={stopInterval}
+                className="hover-box"
+            >
+                Hover here to stop interval
+            </div>
         </main>
     );
 }
